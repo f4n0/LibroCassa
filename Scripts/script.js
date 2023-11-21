@@ -1,9 +1,9 @@
 //#region Constant
-const CLIENT_ID = '';
+const CLIENT_ID = '1049876320606-rkqa59e06hllquhq4c014j4s089dmmhd.apps.googleusercontent.com';
 const API_KEY = '';
 const DISCOVERY_DOCS = ['https://sheets.googleapis.com/$discovery/rest?version=v4', 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest']
 const SCOPES = 'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/drive.metadata https://www.googleapis.com/auth/drive.readonly';
-const APP_ID = '';
+const APP_ID = 'librocassa-382310';
 //#endregion
 
 //#region Global VAR
