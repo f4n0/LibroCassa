@@ -104,7 +104,7 @@ function handleAuthClick() {
         document.getElementById('RefreshButton').style.visibility = 'visible';
         document.getElementById('authorize_button').innerText = 'Refresh';
         $("#Pagecontent").css("visibility", "visible");
-        $("#Authorize").css("visibility", "hidden");
+        $("#Authorize").css("display", "none");
         createPicker();
     };
 
@@ -125,6 +125,7 @@ function handleSignoutClick() {
         document.getElementById('content').innerText = '';
         document.getElementById('authorize_button').innerText = 'Authorize';
         document.getElementById('signout_button').style.visibility = 'hidden';
+        $("#RefreshButton").css("visibility", "hidden");
         $("#Pagecontent").css("visibility", "hidden");       
         $("#Authorize").css("visibility", "visible"); 
     }
