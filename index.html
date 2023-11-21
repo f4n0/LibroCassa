@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Libro Cassa</title>
+    <meta charset="utf-8" />
+
+    <link rel="stylesheet" href="https://kit-free.fontawesome.com/releases/latest/css/free.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://unpkg.com/bootstrap-table@1.22.1/dist/bootstrap-table.min.css">
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+
+    <link rel="stylesheet" href="Styles\icons.css">
+    <link rel="stylesheet" href="Styles\site.css">
+</head>
+
+<body>
+    <!--Add buttons to initiate auth sequence and sign out-->
+    <div class="container">
+        <div id="Authorize" class="text-center">
+            <p>Clicca su autorizza e scegli il libro cassa che vuoi modificare!</p>
+            <button id="authorize_button" class="btn btn-success" onclick="handleAuthClick()">Autorizza</button>
+        </div>
+        <div id="Pagecontent">
+            <button id="signout_button" class="btn btn-success" onclick="handleSignoutClick()">Sign Out</button>
+
+
+            <ul class="nav nav-tabs" id="myTab" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="Informazioni-tab" data-bs-toggle="tab"
+                        data-bs-target="#Informazioni" type="button" role="tab" aria-controls="Informazioni"
+                        aria-selected="false">Informazioni</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link " id="Entrata-tab" data-bs-toggle="tab" data-bs-target="#Entrata"
+                        type="button" role="tab" aria-controls="Entrata" aria-selected="true">Entrata</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="Uscita-tab" data-bs-toggle="tab" data-bs-target="#Uscita" type="button"
+                        role="tab" aria-controls="Uscita" aria-selected="false">Uscita</button>
+                </li>
+            </ul>
+            <div class="tab-content" id="myTabContent">
+                <div class="tab-pane fade" id="Entrata" role="tabpanel" aria-labelledby="Entrata-tab">
+                    <div class="card card-body">
+                        <!-- Firma -->
+                        <div>
+                            <h4> <a data-bs-toggle="collapse" href="#SignatureContainer" id="SignatureCollapser"
+                                    class="text-dark" aria-expanded="false">Firma
+                                    <span class="text-collapsed"><i class="fas fa-chevron-down"></i></span>
+                                    <span class="text-expanded"><i class="fas fa-chevron-up"></i></span>
+                                </a></h4>
+                            <div id="SignatureContainer" class="collapse">
+                                <p>Le ricevute devono essere firmate, qua sotto hai la possibilità di firmare (o di
+                                    <label class="importLabel" for="ImportExistingSignature">importarne una
+                                        esistente</label>):
+                                </p>
+                                <div class="wrapper">
+                                    <canvas id="signature-pad" class="signature-pad" width=500 height=100></canvas>
+                                </div><br>
+                                <button type="button" class="btn btn-secondary"
+                                    onclick="ClearSignaturePad()">Pulisci</button>
+                                <button type="button" class="btn btn-secondary" onclick="SaveSignature()">Salva</button>
+                                <input type="file" id="ImportExistingSignature" name="ImportExistingSignature" hidden
+                                    style="position: absolute; display: none;" />
+                            </div>
+                        </div></br>
+                        <form id="receiptsFormEntrata" action="post">
+                            <div class="row">
+                                <div class="col-sm">
+                                    <div class="row">
+                                        <div class="col-sm">
+                                            <label for="prezzo">Nr: </label>
+                                            <input type="text" class="form-control" placeholder="Nr." name="LastNo"
+                                                autocomplete="off">
+                                        </div>
+                                        <div class="col-sm">
+                                            <label for="Date">Data: </label>
+                                            <input type="text" class="form-control" id="datepickerEntrata"
+                                                placeholder="Data" name="Date" autocomplete="off" required>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col">
+                                            <label for="Reason">Causale: </label>
+                                            <input type="text" class="form-control" placeholder="Causale" name="Reason"
+                                                autocomplete="off" required>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col">
+                                            <label for="Price">Importo (in lettere): </label>
+                                            <input type="text" class="form-control" placeholder="Prezzo" name="Price"
+                                                autocomplete="off" required readonly>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col">
+                                            <label for="Total">Importo (in cifre): </label>
+                                            <input type="number" class="form-control" placeholder="Totale" name="Total"
+                                                autocomplete="off" required step="any">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-sm">
+                                    <label for="Holder">Ricevuti da (uno per riga): </label>
+                                    <textarea class="form-control" placeholder="Intestatario" name="Holder"
+                                        autocomplete="off" required style="height: 80%;"></textarea>
+
+                                </div>
+                            </div>
+                            <div class="row mt-4">
+                                <div class="col">
+                                    <input type="checkbox" class="form-check-input" name="MakeInvoices"
+                                        autocomplete="off" step="any">
+                                    <label class="form-check-label" for="MakeInvoices">Genera ricevute: </label>
+                                </div>
+                            </div>
+                            <div class="row mt-4">
+                                <div class="col">
+                                    <input type="submit" class="btn btn-success" value="Salva">
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="Uscita" role="tabpanel" aria-labelledby="Uscita-tab">
+                    <div class="card card-body">
+                        <form id="receiptsFormUscita" action="post">
+                            <div class="row">
+                                <div class="col-sm">
+                                    <div class="row">
+                                        <div class="col-sm">
+                                            <label for="prezzo">Nr: </label>
+                                            <input type="text" class="form-control" placeholder="Nr." name="LastNo"
+                                                autocomplete="off">
+                                        </div>
+                                        <div class="col-sm">
+                                            <label for="Date">Data: </label>
+                                            <input type="text" class="form-control" id="datepickerUscita"
+                                                placeholder="Data" name="Date" autocomplete="off" required>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col">
+                                            <label for="Reason">Causale: </label>
+                                            <input type="text" class="form-control" placeholder="Causale" name="Reason"
+                                                autocomplete="off" required>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col">
+                                            <label for="Total">Importo (in cifre): </label>
+                                            <input type="number" class="form-control" placeholder="Totale" name="Total"
+                                                autocomplete="off" required step="any">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-sm">
+                                    <label for="Giustificativo">Giustificativo: </label>
+                                    <input type="file" class="form-control" name="Giustificativo">
+
+                                </div>
+                            </div>
+                            <div class="row mt-4">
+                                <div class="col">
+                                    <input type="submit" class="btn btn-success" value="Salva">
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div class="tab-pane fade show active" id="Informazioni" role="tabpanel"
+                    aria-labelledby="Informazioni-tab">
+                    <div class="card card-body">
+                        Come funziona?<br>
+                        Scegli l'operazione che vuoi fare, se registrare una entrata o una uscita e seleziona la sua Tab corrispondente<br>
+                        Segui i campi da compilare<br>
+                        Fai Salva, una volta fatto riceverai un messaggio di conferma!<br>
+                        <b>Fai attenzione che questo programma non controlla se carichi due volte le stesse cose!</b><br>
+                        In qualsiasi caso, potrai andare sul file excel e modificarlo a mano!
+                        Le ricevute verranno caricate automaticamente!
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col">
+                    <div class="collapse multi-collapse" id="Entrata">
+                        <div class="card card-body">
+
+                        </div>
+                    </div>
+
+                    <div class="collapse multi-collapse" id="Uscita">
+                        <div class="card card-body">
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <p class="toolbar">
+                <button id="RefreshButton" class="btn btn-success" onclick="ReadFromSpreadsheet()">Refresh Table</button>
+            </p>
+
+            <table id="table" data-toolbar=".toolbar"></table>
+
+            <pre id="content" style="white-space: pre-wrap;"></pre>
+
+            <div id="template" style="display: none;">
+                <div class="border border-success bg-white Content" data-id="{{No}} - {{Holder}}">
+                    <div class="px-2 pt-2 row align-items-center">
+                        <div class="col-2">
+                            <img src="./Images/Cngei_Sezioni48.png" width="100" height="100" crossorigin="use-credentials">
+                        </div>
+                        <div class="col-5 align-self-end">
+                            <h5>CNGEI Sezione Scout di Torino APS</h5>
+                            <p class="mb-0" style="font-size: 0.8rem;">
+                                Via Reiss Romoli, 49 Torino 10148  &emsp;
+                                Codice Fiscale 97583440017
+                            </p>
+                        </div>
+                        <div class="col-5 align-self-end">
+                            <div class="row no-gutters">
+                                <div class="col">
+                                    <h4>RICEVUTA n.</h4>
+                                </div>
+                                <div class="col">
+                                    <input class="form-control border border-success" value="{{No}}" disabled>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <hr class="border-success">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <div class="px-2 row align-items-center mt-2 ">
+                                <div class="col-2 text-right ">
+                                    <h4>Ricevuti da:</h4>
+                                </div>
+                                <div class="col-10 ">
+                                    <input class="form-control border border-success" value="{{Holder}} " disabled>
+                                </div>
+                            </div>
+                            <div class="px-2 row align-items-center mt-1 ">
+                                <div class="col-2 text-right ">
+                                    <h4>Data:</h4>
+                                </div>
+                                <div class="col-10 ">
+                                    <input class="form-control border border-success " value="{{Date}} " disabled>
+                                </div>
+                            </div>
+                            <div class="px-2 row align-items-center mt-1 ">
+                                <div class="col-2 text-right ">
+                                    <h4>€:</h4>
+                                </div>
+                                <div class="col-10 ">
+                                    <input class="form-control border border-success " value="{{Price}} " disabled>
+                                </div>
+                            </div>
+                            <div class="px-2 row align-items-center mt-1 ">
+                                <div class="col-2 text-right ">
+                                    <h4>Causale:</h4>
+                                </div>
+                                <div class="col-10">
+                                    <input class="form-control border border-success " value="{{Reason}} " disabled>
+                                </div>
+                            </div>
+    
+                            <div class="px-2 row mt-3 align-items-center mt-1 ">
+                                <div class="col-2 text-right ">
+                                    <h4>Firma:</h4>
+                                </div>
+                                <div class="col-4">
+                                    <img id="ReceiptSignature" height="50" width="300">
+                                </div>
+                                <div class="col-6">
+                                    <div class="row">
+                                        <div class="col-4 text-right ">
+                                            <h4>TOTALE:</h4>
+                                        </div>
+                                        <div class="col-8 ">
+                                            <input class="form-control border border-success" value="{{Total}} " disabled>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row no-gutters ">
+                                <div class="col no-gutters ">
+                                    <hr class="border-success ">
+                                </div>
+                            </div>
+                            <div class="px-2 row">
+                                <div class="col ">
+                                    <p>
+                                        Esente da bollo ai sensi dell'art. 82 co.5 D Lgs 117/2017
+                                    </p>
+                                </div>
+                                <div class="col">
+                                    
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div><br>
+            </div>
+        </div>
+    </div>
+    
+    <div id="all"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"
+        integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://code.jquery.com/ui/1.12.0/jquery-ui.min.js"
+        integrity="sha256-eGE6blurk5sHj+rmkfsGYeKyZx3M4bG+ZlFyA7Kns7E=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+        crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/bootstrap-table@1.22.1/dist/bootstrap-table.min.js"></script>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/signature_pad@2.3.2/dist/signature_pad.min.js"></script>
+    <script src="./Scripts/dom-to-image.min.js"></script>
+    <script src="./Scripts/NumToWord.js"></script>
+
+
+    <script type="text/javascript" src="./Scripts/script.js"> </script>
+    <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
+    <script async defer src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script>
+</body>
+
+</html>
+<!-- [END sheets_quickstart] -->

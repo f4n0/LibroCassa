@@ -1,0 +1,73 @@
+.value {
+    font-size: large;
+    font-weight: 600;
+    padding-left: 10px;
+    background-color: #f0f0f0;
+}
+
+.wrapper {
+    position: relative;
+    width: 500px;
+    height: 100px;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    border: 1px solid green;
+    box-sizing: content-box;
+}
+
+.signature-pad {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 500px;
+    height: 100px;
+    background-color: white;
+}
+
+#Links {
+    overflow-y: scroll;
+    height: 200px;
+}
+
+#all {
+    width: 1920px;
+    height: 500px;
+}
+
+#SignatureCollapser[aria-expanded=false] .text-expanded {
+    display: none;
+}
+
+#SignatureCollapser[aria-expanded=true] .text-collapsed {
+    display: none;
+}
+
+#HelpCollapser[aria-expanded=false] .text-expanded {
+    display: none;
+}
+
+#HelpCollapser[aria-expanded=true] .text-collapsed {
+    display: none;
+}
+
+
+.importLabel {
+    color: blue;
+    cursor: pointer;
+}
+
+.importLabel:hover {
+    text-decoration: underline;
+}
+
+#Authorize {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    padding: 10px;
+    -ms-transform: translateX(-50%) translateY(-50%);
+    -webkit-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
+}
