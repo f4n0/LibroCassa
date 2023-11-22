@@ -12,6 +12,7 @@ let tokenClient;
 let gapiInited = false;
 let gisInited = false;
 let SELECTED_FILE_ID = ''
+let SELECTED_FILE_URL = ''
 let FOLDER_USCITA = ''
 let FOLDER_ENTRATA = ''
 let index = 0;
@@ -87,10 +88,12 @@ function gisLoaded() {
     });
     gisInited = true;
     maybeEnableButtons();
+
 }
 function maybeEnableButtons() {
     if (gapiInited && gisInited) {
         document.getElementById('authorize_button').style.visibility = 'visible';
+        RestoreFromLocalStorage();
     }
 }
 function handleAuthClick() {
@@ -99,7 +102,8 @@ function handleAuthClick() {
             throw (resp);
         }
         accessToken = resp.access_token;
-
+        localStorage.setItem("gapi_acc", accessToken);
+        gapi.client.setToken(resp);
         document.getElementById('signout_button').style.visibility = 'visible';
         document.getElementById('RefreshButton').style.visibility = 'visible';
         document.getElementById('authorize_button').innerText = 'Refresh';
@@ -126,14 +130,19 @@ function handleSignoutClick() {
         document.getElementById('authorize_button').innerText = 'Authorize';
         document.getElementById('signout_button').style.visibility = 'hidden';
         $("#RefreshButton").css("visibility", "hidden");
-        $("#Pagecontent").css("visibility", "hidden");       
-        $("#Authorize").css("visibility", "visible"); 
+        $("#Pagecontent").css("visibility", "hidden");
+        $("#Authorize").css("display", "initial");
+
+        localStorage.clear();
     }
 }
 //#endregion
 
 //#region Google file Picker
 function createPicker() {
+    if (SELECTED_FILE_ID && FOLDER_ENTRATA && FOLDER_USCITA) {
+        ReadFromSpreadsheet()
+    }else {
     var docsViewMine = new google.picker.DocsView()
         .setIncludeFolders(true)
         .setOwnedByMe(true)
@@ -154,13 +163,14 @@ function createPicker() {
         .enableFeature(google.picker.Feature.SUPPORT_TEAM_DRIVES)
         .enableFeature(google.picker.Feature.SUPPORT_DRIVES)
         .setAppId(APP_ID)
-        .setOAuthToken(accessToken)
+        .setOAuthToken(gapi.client.getToken().access_token)
         .addView(docsViewMine)
         .addView(docsViewTeam)
         .addView(docsViewStarred)
         .setCallback(pickerCallback)
         .build();
     picker.setVisible(true);
+    }
 }
 
 
@@ -169,7 +179,10 @@ async function pickerCallback(data) {
         let text = `Picker response: \n${JSON.stringify(data, null, 2)}\n`;
         const pdocument = data[google.picker.Response.DOCUMENTS][0];
         const fileId = pdocument[google.picker.Document.ID];
+        console.log(pdocument)
         SELECTED_FILE_ID = fileId;
+        SELECTED_FILE_URL = pdocument["url"];
+
         let parentID = pdocument["parentId"]
         //         FOLDER_USCITA
         // FOLDER_ENTRATA
@@ -192,6 +205,11 @@ async function pickerCallback(data) {
                 FOLDER_USCITA = response.result.files[index].id
             }
         }
+
+        localStorage.setItem("spreadsheet", SELECTED_FILE_ID);
+        localStorage.setItem("spreadsheetUrl", SELECTED_FILE_URL);
+        localStorage.setItem("entrata", FOLDER_ENTRATA);
+        localStorage.setItem("uscita", FOLDER_USCITA);
         ReadFromSpreadsheet()
     }
 }
@@ -199,6 +217,8 @@ async function pickerCallback(data) {
 
 //#region Google Spreadsheet
 async function ReadFromSpreadsheet() {
+    $("#OpenSpreadsheet").attr("href",SELECTED_FILE_URL)
+
     let response;
     try {
         response = await gapi.client.sheets.spreadsheets.values.get({
@@ -248,11 +268,11 @@ async function PushDataToSpreasheet(data, range) {
             startRowNr = response.result.values.length
         } catch (err) {
             //possible no new lines 
-            startRowNr  = 0
+            startRowNr = 0
         }
         gapi.client.sheets.spreadsheets.values.update({
             spreadsheetId: SELECTED_FILE_ID,
-            range: 'Libro Cassa!D'+( startRowNr+ 7),
+            range: 'Libro Cassa!D' + (startRowNr + 7),
             valueInputOption: "USER_ENTERED",
             resource: body,
         }).then((response) => {
@@ -273,19 +293,19 @@ async function UploadFile(name, mime, data, folderId) {
         'mimeType': mime, // mimeType at Google Drive
         'parents': [folderId], // Folder ID at Google Drive
     };
-    
+
     var accessToken = gapi.auth.getToken().access_token; // Here gapi is used for retrieving the access token.
     var form = new FormData();
     form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
     form.append('file', data);
-    
+
     fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id', {
         method: 'POST',
         headers: new Headers({ 'Authorization': 'Bearer ' + accessToken }),
         body: form,
     }).then((res) => {
         return res.json();
-    }).then(function(val) {
+    }).then(function (val) {
     });
 }
 //#endregion
@@ -309,7 +329,7 @@ $formUscita.on("submit", (event) => {
     $formUscita.find("[name='LastNo']")[0].value = tempNos;
     PushDataToSpreasheet(dataArr)
     var file = $formUscita.find("[name='Giustificativo']")[0].files[0]
-    UploadFile(dataArr[0].Nos, file.type, file,FOLDER_USCITA)
+    UploadFile(dataArr[0].Nos, file.type, file, FOLDER_USCITA)
     alert("Generato!")
     return false;
 })
@@ -357,7 +377,7 @@ $formEntrata.on("submit", (event) => {
 //#endregion
 
 //#region Receipts
-async function GenerateReceipts(data){
+async function GenerateReceipts(data) {
     var ret = addSignatureToTemplate();
     if (ret) {
         $("#Links").empty();
@@ -373,17 +393,17 @@ async function GenerateReceipts(data){
         };
         var res = document.getElementById('all').getElementsByClassName('Content');
 
-        
+
         Array.prototype.forEach.call(res, function (elem) {
             var options = {
                 width: 1920,
                 height: 500
             }
             domtoimage.toBlob(elem, options).then(function (dataUrl) {
-                UploadFile(elem.getAttribute("data-id") + ".png", dataUrl.type, dataUrl,FOLDER_ENTRATA)
+                UploadFile(elem.getAttribute("data-id") + ".png", dataUrl.type, dataUrl, FOLDER_ENTRATA)
                 elem.remove();
                 //downloadURI(dataUrl, elem.getAttribute("data-id"));
-              
+
             })
         });
 
@@ -478,4 +498,16 @@ $('input[name="Total"]').on('input', function () {
     $('input[name="Price"]').val(sgart.convNumLett(tot, false, false));
 
 });
+
+function RestoreFromLocalStorage() {
+    var saved = localStorage.getItem("gapi_acc")
+    if (saved) {
+        gapi.client.setToken({ access_token: saved });
+    }
+    
+    SELECTED_FILE_ID = localStorage.getItem("spreadsheet");
+    FOLDER_ENTRATA = localStorage.getItem("entrata");
+    FOLDER_USCITA = localStorage.getItem("uscita");
+    SELECTED_FILE_URL = localStorage.getItem("spreadsheetUrl");
+}
 //#endregion

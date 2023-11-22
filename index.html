@@ -24,8 +24,11 @@
             <button id="authorize_button" class="btn btn-success" onclick="handleAuthClick()">Autorizza</button>
         </div>
         <div id="Pagecontent">
-            <button id="signout_button" class="btn btn-success" onclick="handleSignoutClick()">Sign Out</button>
-
+            <div class="row">
+                <div class="col">
+                    <button id="signout_button" class="btn btn-success" onclick="handleSignoutClick()">Esci</button>
+                </div>
+            </div>
 
             <ul class="nav nav-tabs" id="myTab" role="tablist">
                 <li class="nav-item" role="presentation">
@@ -181,7 +184,8 @@
                         Fai Salva, una volta fatto riceverai un messaggio di conferma!<br>
                         <b>Fai attenzione che questo programma non controlla se carichi due volte le stesse cose!</b><br>
                         In qualsiasi caso, potrai andare sul file excel e modificarlo a mano!
-                        Le ricevute verranno caricate automaticamente!
+                        Le ricevute verranno caricate automaticamente!<br>
+                        <b>Se vedi che apre un file sbagliato, fai esci e ti chiederà di nuovo tutte le autorizzazioni</b>
                     </div>
                 </div>
             </div>
@@ -203,7 +207,8 @@
             </div>
 
             <p class="toolbar">
-                <button id="RefreshButton" class="btn btn-success" onclick="ReadFromSpreadsheet()">Refresh Table</button>
+                <button id="RefreshButton" class="btn btn-success" onclick="ReadFromSpreadsheet()">Aggiorna tabella</button>
+                <a id="OpenSpreadsheet" target="_blank" class="btn btn-success" href="#">Apri file excel</a>
             </p>
 
             <table id="table" data-toolbar=".toolbar"></table>
